@@ -335,7 +335,7 @@ static void saveXYZ(const char* filename, const Mat& mat)
 //}
 
 //stanley
-//static void onMouse( int event, int x, int y, int f, void* );
+static void onMouse( int event, int x, int y, int f, void* );
 
 void on_TrackbarNumcharge(int,void*)
 {
@@ -346,7 +346,7 @@ void on_TrackbarNumcharge(int,void*)
 
 Mat img1,img2;
 Mat threeD;	
-
+int gy=0,gx=0;
 int main()
 {
 	int cameraID_L=0;
@@ -354,16 +354,12 @@ int main()
 
 	VideoCapture Cap1,Cap2;
 
-	
-
 	Cap1.open(cameraID_L);
 	Cap2.open(cameraID_R);
 
 	StereoSGBM sgbm;
 	StereoBM bm;
 	float scale = 1.f;
-
-	
 
 	Cap1>>img1;
 	Size img_size = img1.size();
@@ -446,27 +442,27 @@ int main()
 	//stanley
 	bm.state->roi1 = roi1;
 	bm.state->roi2 = roi2;
-	int preFilterCap=31;
-	SADWindowSize=25;
-	int minDisparity=0;
-	numberOfDisparities=64;
-	int textureThreshold=20;
-	int uniquenessRatio=9;
-	int speckleWindowSize=100;
-	int speckleRange=32;
-	int disp12MaxDiff = 1;
+	//int preFilterCap=31;
+	//SADWindowSize=25;
+	//int minDisparity=0;
+	//numberOfDisparities=64;
+	//int textureThreshold=20;
+	//int uniquenessRatio=9;
+	//int speckleWindowSize=100;
+	//int speckleRange=32;
+	//int disp12MaxDiff = 1;
 
 
 	//stanley near
-	//int preFilterCap=4;
-	//SADWindowSize=29;
-	//int minDisparity=7;
-	//numberOfDisparities=127;
-	//int textureThreshold=16;
-	//int uniquenessRatio=2;
-	//int speckleWindowSize=50;
-	//int speckleRange=43;
-	//int disp12MaxDiff = 2;
+	int preFilterCap=4;
+	SADWindowSize=29;
+	int minDisparity=7;
+	numberOfDisparities=127;
+	int textureThreshold=16;
+	int uniquenessRatio=2;
+	int speckleWindowSize=50;
+	int speckleRange=43;
+	int disp12MaxDiff = 2;
 
 	
 	
@@ -536,7 +532,6 @@ int main()
 		if(preFilterCap==0)
 			preFilterCap=1;
 
-
 		bm.state->SADWindowSize = SADWindowSize;
 		bm.state->numberOfDisparities = numberOfDisparities;
 		
@@ -559,9 +554,31 @@ int main()
 
 		//turn to 3d
 		//threeD = cv2.reprojectImageTo3D(disparity.astype(np.float32)/16., camera_configs.Q)
-		//reprojectImageTo3D(disp, threeD,Q,-1);
+		reprojectImageTo3D(disp8, threeD,Q,-1);
 	
-		
+		//show
+		Vec3f XYZ=threeD.at<Vec3f>(gy,gx);
+		float X=XYZ.val[0];
+		float Y=XYZ.val[1];
+		float Z=XYZ.val[2];
+
+		char name[30];
+		sprintf_s(name,"X=%f",X);
+		putText(img1,name, Point(150,40) , FONT_HERSHEY_SIMPLEX, .7, Scalar(0,255,0), 2,8,false );
+
+		sprintf_s(name,"Y=%f",Y);
+		putText(img1,name, Point(150,80) , FONT_HERSHEY_SIMPLEX, .7, Scalar(0,255,0), 2,8,false );
+
+		sprintf_s(name,"Z=%f",Z);
+		putText(img1,name, Point(150,120) , FONT_HERSHEY_SIMPLEX, .7, Scalar(0,255,0), 2,8,false );
+
+		sprintf_s(name,"X=%d",gx);
+		putText(img1,name, Point(25,300) , FONT_HERSHEY_SIMPLEX, .7, Scalar(0,0,255), 2,8,false );
+
+		sprintf_s(name,"Y=%d",gy);
+		putText(img1,name, Point(25,340) , FONT_HERSHEY_SIMPLEX, .7, Scalar(0,0,255), 2,8,false );
+
+
 
 		namedWindow("left", 1);
 		imshow("left", img1);
@@ -571,7 +588,7 @@ int main()
 		imshow("disparity", disp8);
 
 		
-		//setMouseCallback("left", onMouse, 0 );
+		setMouseCallback("left", onMouse, 0 );
 
 		
 		fflush(stdout);
@@ -586,33 +603,11 @@ int main()
 	return 0;
 }
 
-//static void onMouse( int event, int x, int y, int f, void* )
-//{
-//	if (event!=CV_EVENT_LBUTTONDOWN)
-//		return;
-//
-//	Vec3f XYZ=threeD.at<Vec3f>(y,x);
-//	float X=XYZ.val[0];
-//	float Y=XYZ.val[1];
-//	float Z=XYZ.val[2];
-//
-//	char name[30];
-//	sprintf_s(name,"X=%f",X);
-//	putText(img1,name, Point(150,40) , FONT_HERSHEY_SIMPLEX, .7, Scalar(0,255,0), 2,8,false );
-//
-//	sprintf_s(name,"Y=%f",Y);
-//	putText(img1,name, Point(150,80) , FONT_HERSHEY_SIMPLEX, .7, Scalar(0,255,0), 2,8,false );
-//
-//	sprintf_s(name,"Z=%f",Z);
-//	putText(img1,name, Point(150,120) , FONT_HERSHEY_SIMPLEX, .7, Scalar(0,255,0), 2,8,false );
-//
-//	sprintf_s(name,"X=%d",x);
-//	putText(img1,name, Point(25,300) , FONT_HERSHEY_SIMPLEX, .7, Scalar(0,0,255), 2,8,false );
-//
-//	sprintf_s(name,"Y=%d",y);
-//	putText(img1,name, Point(25,340) , FONT_HERSHEY_SIMPLEX, .7, Scalar(0,0,255), 2,8,false );
-//
-//	imwrite("hsv.jpg",image);
-//	imshow("left",img1);
-//	waitKey();
-//}
+static void onMouse( int event, int x, int y, int f, void* )
+{
+	if (event!=CV_EVENT_LBUTTONDOWN)
+		return;
+
+	gx=x;
+	gy=y;
+}
